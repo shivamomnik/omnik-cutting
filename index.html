@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Cutting — Daily Shift Report</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#f1f5f9;color:#0f172a;font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;min-height:100vh}
+input,select,textarea,button{font-family:inherit;font-size:14px;outline:none}
+input,select,textarea{background:#ffffff;border:1px solid #cbd5e1;color:#0f172a;padding:9px 12px;border-radius:8px;width:100%}
+input::placeholder,textarea::placeholder{color:#94a3b8}
+select{cursor:pointer}
+select option{background:#ffffff}
+textarea{resize:vertical;min-height:70px}
+button{cursor:pointer;border:none;font-weight:600}
+.lbl{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px}
+.card{background:#ffffff;border:1px solid #e2e8f0;border-radius:12px}
+.btn-or{background:#3b82f6;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px}
+.btn-gh{background:transparent;border:1px solid #cbd5e1;color:#64748b;padding:9px 16px;border-radius:8px;font-size:13px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid transparent}
+header{background:#ffffff;border-bottom:1px solid #e2e8f0;padding:0 16px;min-height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.body{padding:16px;max-width:900px;margin:0 auto}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.dn{display:none}
+.ok{background:#f0fdf4;border:1px solid #86efac;color:#16a34a;padding:9px 13px;border-radius:8px;font-size:12px;margin-bottom:12px}
+@media(max-width:600px){.g2{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}.g4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div style="width:32px;height:32px;background:#3b82f6;border-radius:7px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:13px;flex-shrink:0">✂</div>
+    <div>
+      <div style="font-size:14px;font-weight:700;line-height:1.1;color:#0f172a">Cutting Section</div>
+      <div style="font-size:9px;color:#94a3b8;letter-spacing:1.2px;text-transform:uppercase">Daily Shift Report</div>
+    </div>
+  </div>
+  <div style="font-size:11px;color:#94a3b8" id="clock"></div>
+</header>
+
+<div class="body">
+
+  <!-- Shift Info -->
+  <div class="card" style="padding:20px;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Shift Details</div>
+    <div class="g3">
+      <div><label class="lbl">Date *</label><input type="date" id="rdate"></div>
+      <div>
+        <label class="lbl">Shift *</label>
+        <select id="rshift">
+          <option value="Day">Day</option>
+          <option value="Night">Night</option>
+        </select>
+      </div>
+      <div><label class="lbl">Reported by</label><input id="reporter" placeholder="Your name"></div>
+    </div>
+  </div>
+
+  <!-- Machine Status -->
+  <div class="card" style="padding:20px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1.5px">Machine Status</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-gh" style="font-size:11px;padding:5px 12px" onclick="setAllStatus('Running')">All Running</button>
+        <button class="btn-gh" style="font-size:11px;padding:5px 12px" onclick="setAllStatus('Idle — no job')">All Idle</button>
+      </div>
+    </div>
+    <div id="machine-grid" style="display:flex;flex-direction:column;gap:6px"></div>
+  </div>
+
+  <!-- Attendance -->
+  <div class="card" style="padding:20px;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Staff Attendance</div>
+    <div class="g4">
+      <div><label class="lbl">Staff present</label><input type="number" id="sp" min="0" value="0"></div>
+      <div><label class="lbl">Staff absent</label><input type="number" id="sa" min="0" value="0"></div>
+      <div><label class="lbl">Trainee present</label><input type="number" id="tp" min="0" value="0"></div>
+      <div><label class="lbl">Trainee absent</label><input type="number" id="ta" min="0" value="0"></div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="card" style="padding:20px;margin-bottom:20px">
+    <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:14px">Additional Notes</div>
+    <textarea id="notes" placeholder="Any breakdowns, special jobs, observations..."></textarea>
+  </div>
+
+  <!-- Preview -->
+  <div id="preview-box" class="dn card" style="padding:18px;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px">Message Preview</div>
+    <pre id="preview-text" style="white-space:pre-wrap;font-size:12px;color:#475569;line-height:1.8;font-family:inherit"></pre>
+  </div>
+
+  <!-- Buttons -->
+  <div style="display:flex;gap:10px;margin-bottom:30px">
+    <button class="btn-gh" style="flex:1" onclick="doPreview()">👁 Preview</button>
+    <button style="flex:2;background:#25d366;color:#fff;padding:12px;border-radius:8px;font-size:14px;font-weight:700" onclick="sendWA()">📲 Send via WhatsApp</button>
+  </div>
+
+</div>
+
+<script>
+var MACHINES=[
+  "Mc 1","Mc 2","Mc 3","Mc 4","Mc 5","Mc 6","Mc 7","Mc 8","Mc 9","Mc 10",
+  "Mc 11","Mc 12A","Mc 12B","Mc 14","Mc 15","Mc 16","Mc 17","Mc 18","Mc 19","Mc 20",
+  "Mc 21","Mc 22","Mc 23","Mc 24","Mc 25","Mc 26","Mc 27","Mc 28","Mc 29","Mc 30",
+  "Mc 31","Mc 32","Mc 33","Mc 34","Mc 35","Mc 36","Mc 37","Mc 38","Mc 39","Mc 40"
+];
+var STATUSES=["Running","Idle — no job","Idle — no operator","Idle — maintenance","Breakdown"];
+var STATUS_ICON={"Running":"🟢","Idle — no job":"⚪","Idle — no operator":"🟡","Idle — maintenance":"🟡","Breakdown":"🔴"};
+
+// Set today's date
+document.getElementById("rdate").value=new Date().toISOString().split("T")[0];
+
+// Clock
+function tick(){
+  var n=new Date();
+  document.getElementById("clock").textContent=n.toLocaleDateString("en-GB",{day:"2-digit",month:"short"})+
+  " · "+n.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+}
+tick();setInterval(tick,10000);
+
+// Build machine rows
+var grid=document.getElementById("machine-grid");
+MACHINES.forEach(function(m,i){
+  var row=document.createElement("div");
+  row.style.cssText="display:grid;grid-template-columns:90px 1fr 2fr;gap:8px;align-items:center";
+
+  var label=document.createElement("div");
+  label.style.cssText="font-size:12px;font-weight:700;color:#0f172a;font-family:monospace";
+  label.textContent=m;
+
+  var sel=document.createElement("select");
+  sel.id="mc-status-"+i;
+  sel.style.fontSize="12px";
+  STATUSES.forEach(function(s){
+    var o=document.createElement("option");
+    o.value=s;o.textContent=s;
+    sel.appendChild(o);
+  });
+  sel.addEventListener("change",function(){
+    updateRowColor(i,sel.value);
+    inp.placeholder=getPlaceholder(sel.value);
+  });
+
+  var inp=document.createElement("input");
+  inp.id="mc-note-"+i;
+  inp.placeholder=getPlaceholder("Running");
+  inp.style.fontSize="12px";
+
+  row.appendChild(label);
+  row.appendChild(sel);
+  row.appendChild(inp);
+  grid.appendChild(row);
+});
+
+function getPlaceholder(status){
+  if(status==="Running")return"e.g. Bopp printed job, HD special...";
+  if(status==="Breakdown")return"Describe the fault...";
+  return"Reason / note (optional)";
+}
+
+function updateRowColor(i,status){
+  var row=grid.children[i];
+  if(status==="Breakdown")row.style.background="rgba(239,68,68,0.06)";
+  else if(status.indexOf("Idle")>=0)row.style.background="rgba(245,158,11,0.06)";
+  else row.style.background="transparent";
+  row.style.borderRadius="6px";
+  row.style.padding=status!=="Running"?"4px 6px":"0";
+}
+
+function setAllStatus(s){
+  MACHINES.forEach(function(m,i){
+    var sel=document.getElementById("mc-status-"+i);
+    if(sel)sel.value=s;
+    updateRowColor(i,s);
+  });
+}
+
+function buildMessage(){
+  var date=document.getElementById("rdate").value;
+  var shift=document.getElementById("rshift").value;
+  var reporter=document.getElementById("reporter").value.trim();
+  var sp=document.getElementById("sp").value||"0";
+  var sa=document.getElementById("sa").value||"0";
+  var tp=document.getElementById("tp").value||"0";
+  var ta=document.getElementById("ta").value||"0";
+  var notes=document.getElementById("notes").value.trim();
+
+  var d=date?new Date(date).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";
+
+  var running=[],idle=[],breakdown=[];
+  MACHINES.forEach(function(m,i){
+    var sel=document.getElementById("mc-status-"+i);
+    var inp=document.getElementById("mc-note-"+i);
+    var status=sel?sel.value:"Running";
+    var note=inp?inp.value.trim():"";
+    var line=m+(note?" — "+note:"");
+    if(status==="Running")running.push(line);
+    else if(status==="Breakdown")breakdown.push(line+(note?"":" — fault not specified"));
+    else idle.push(m+" ("+status+(note?": "+note:"")+")" );
+  });
+
+  var msg="✂️ *Cutting Daily Report*\n";
+  msg+="━━━━━━━━━━━━━━━━━━\n";
+  msg+="📅 *Date:* "+d+"\n";
+  msg+="🌙 *Shift:* "+shift+"\n";
+  if(reporter)msg+="👤 *Reported by:* "+reporter+"\n";
+  msg+="━━━━━━━━━━━━━━━━━━\n";
+
+  if(breakdown.length){
+    msg+="🔴 *Breakdowns ("+breakdown.length+"):*\n";
+    breakdown.forEach(function(l){msg+="  • "+l+"\n";});
+    msg+="\n";
+  }
+  if(running.length){
+    msg+="🟢 *Running ("+running.length+"/"+MACHINES.length+"):*\n";
+    running.forEach(function(l){msg+="  • "+l+"\n";});
+    msg+="\n";
+  }
+  if(idle.length){
+    msg+="⚪ *Idle ("+idle.length+"):*\n";
+    idle.forEach(function(l){msg+="  • "+l+"\n";});
+    msg+="\n";
+  }
+
+  msg+="━━━━━━━━━━━━━━━━━━\n";
+  msg+="👥 *Attendance:*\n";
+  msg+="  Staff — Present: "+sp+" | Absent: "+sa+"\n";
+  msg+="  Trainee — Present: "+tp+" | Absent: "+ta+"\n";
+
+  if(notes){
+    msg+="━━━━━━━━━━━━━━━━━━\n";
+    msg+="📝 *Notes:* "+notes+"\n";
+  }
+
+  return msg;
+}
+
+function doPreview(){
+  var msg=buildMessage();
+  var box=document.getElementById("preview-box");
+  document.getElementById("preview-text").textContent=msg;
+  box.classList.remove("dn");
+  box.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function sendWA(){
+  var msg=buildMessage();
+  window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+}
+</script>
+</body>
+</html>
